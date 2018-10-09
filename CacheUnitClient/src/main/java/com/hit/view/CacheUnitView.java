@@ -24,7 +24,7 @@ import com.hit.client.CacheUnitClientObserver;
 public class CacheUnitView {
 	
 	    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
+            JTextArea ta = new JTextArea();
 	
 		public CacheUnitView() {}
 
