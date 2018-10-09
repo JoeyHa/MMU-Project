@@ -89,6 +89,20 @@ public class CacheUnitView {
 			}
 	
 	
-	public <T> void updateUIData(T t) {}
+	   public <T> void updateUIData(T t) 
+	        {
+	        	if (t.toString().equals("true")) //load succeeded
+	        	{
+	        		ta.setText("Succeeded :) ");
+	        		ta.setSelectedTextColor(Color.GREEN);
+	        	}
+	        	else if (t.toString().equals("false")) // load failed 
+	        	{
+	        		ta.setText("Failed :( ");
+	        		ta.setSelectedTextColor(Color.RED);
+	        	}
+	        	else ta.setText(t.toString());  // stat
+	        	ta.invalidate();
+	        }
 
 }
