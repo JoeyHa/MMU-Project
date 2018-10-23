@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Observable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -27,7 +28,7 @@ public class Server extends java.lang.Object implements java.beans.PropertyChang
 				if (state == false)
 				{
 				  state=true;
-				  run();
+				  new Thread(this).start();
 				}
 				else System.out.println("Server is already up\n");
 				break;
@@ -37,17 +38,16 @@ public class Server extends java.lang.Object implements java.beans.PropertyChang
 					System.out.println("Server is already down\n");
 				else
 				{
-						state = false;
 						try {
+							state = false;
 							server.close();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					System.out.println("Shutdown server ");
 				}
 				break;
-			default:
+			    default:
 				System.out.println("Not a valid commnand");
 				break;
 		}
@@ -56,37 +56,31 @@ public class Server extends java.lang.Object implements java.beans.PropertyChang
 	@SuppressWarnings("deprecation")
 	public void run() 
 	{
-		Thread sThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
 				try 
 				{
 					server=new ServerSocket(port);
 					System.out.println("Starting server.......");
 					Executor ex = Executors.newFixedThreadPool(5); // pool of threads and execute multiple tasks 
+					CacheUnitController<String> cuc= new CacheUnitController<String>();
 					 while(state) 
 					 {
-						 if ((server == null)||(server.isClosed()))
-						 {
 						 Socket someClient = server.accept();
-					     HandleRequest<String> RequesterHandler = new HandleRequest<String>(someClient, new CacheUnitController<String>());  
+					     HandleRequest<String> RequesterHandler = new HandleRequest<String>(someClient,cuc);  
 					     ex.execute(RequesterHandler);
-						 }
 					 } 
 				}
-			   catch (Exception e) {
-				   e.printStackTrace();
-			   }
-	      	try {			
-			server.close();
-		} catch (IOException e) {
-			
+			catch(SocketException e) { }
+			catch (IOException e) {
+			e.printStackTrace();
+			}
+			finally {
+					try {
+					if(server != null)
+						server.close();
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 	}
-		});
-		sThread.start();
-		if (state==false)
-			sThread.destroy();
-   }
 }
 	

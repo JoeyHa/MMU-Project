@@ -19,4 +19,7 @@ public class CacheUnitController<T> extends java.lang.Object {
 	public DataModel<T>[] get(DataModel<T>[] dataModels)
 	{return cus.get(dataModels);}
 
+	public String getStats() 
+	{return cus.showStats();}
+
 }

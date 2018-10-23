@@ -8,34 +8,44 @@ import com.hit.dm.DataModel;
 import com.hit.memory.CacheUnit;
 
 public class CacheUnitService<T> extends java.lang.Object {
-	IAlgoCache<Long,DataModel<String>> algo;
-	CacheUnit<String> cu;
-    IDao<Long, DataModel<String>> dao;
+	
+	private static final String Algorithm = "LRU";
+	private static final Integer Capacity = 4;
+    private	Integer swaps=0,requests=0,dataModelsCounter=0;
+	IAlgoCache<Long,DataModel<T>> algo;
+	CacheUnit<T> cu;
+	DataModel<T> dm;
+    IDao<Long, DataModel<T>> dao;
 	 
 	public CacheUnitService() 
 	{
-		 algo = new LRUAlgoCacheImpl<Long, DataModel<String>>(2);
-		 cu = new CacheUnit<String>(algo);	
-	     dao = new DaoFileImpl<>("file.txt",2);
+		 algo = new LRUAlgoCacheImpl<Long, DataModel<T>>(Capacity);
+		 cu =  new CacheUnit<T>(algo);	
+	     dao = new DaoFileImpl<>("src\\main\\resources\\datasource.txt",500);
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public boolean update(DataModel<T>[] dataModels) 
 	{
-		try {
-			cu.putDataModels((DataModel<String>[]) dataModels);
-			int dmSize = dataModels.length;
-			for(int i =0; i < dmSize; i++) {
-				dao.save((DataModel<String>) dataModels[i].getContent());
+		try 
+		{
+			DataModel<T>[] temp = cu.putDataModels(dataModels);
+			for(int i=0; i < dataModels.length;i++) 
+			{
+				dataModelsCounter++;
+				if(temp[i] != null) 
+				{
+					dao.save(temp[i]);
+					swaps++;
+				}
 			}
+			requests++;
 		}
-		  catch (Exception e) {
+		  catch (Exception e) 
+		{
 			  return false;
-		  }
+		}
 		return true;
 	}
-	
-	@SuppressWarnings("unchecked")
 	public boolean delete(DataModel<T>[] dataModels) 
 	{
 		try {
@@ -43,11 +53,16 @@ public class CacheUnitService<T> extends java.lang.Object {
 			Long [] dmId = new Long[dmSize];
 			for(int i =0; i < dmSize; i++) {
 				dmId[i] = dataModels[i].getDataModelId();
-				dao.delete((DataModel<String>) dataModels[i].getContent());
+				T t = (T)dataModels[i].getContent();
+				DataModel<T> entity = new DataModel<T>(dmId[i], t);
+				dao.delete(entity);
+				dataModelsCounter++;
 			}
+			requests++;
 			cu.removeDataModels(dmId);
 		}
 		  catch (Exception e) {
+			  e.printStackTrace();
 			  return false;
 		  }
 		return true;
@@ -56,14 +71,29 @@ public class CacheUnitService<T> extends java.lang.Object {
 	@SuppressWarnings("unchecked")
 	public DataModel<T>[] get(DataModel<T>[] dataModels) 
 	{
+		requests++;
 		int dmSize = dataModels.length;
 		Long [] dmId = new Long[dmSize];
 		for(int i =0; i < dmSize; i++) 
 		{
 			dmId[i] = dataModels[i].getDataModelId();
-			dao.find(dataModels[i].getDataModelId());
+			dataModelsCounter++;
 		}
-		return (DataModel<T>[]) cu.getDataModels(dmId);
+		DataModel<T>[] temp = new DataModel[dataModels.length];
+		temp = (DataModel<T>[]) cu.getDataModels(dmId);
+
+		for (int i = 0; i < dataModels.length; i++) {
+			if (temp[i] == null)
+			{
+				temp[i] = (DataModel<T>) dao.find(dataModels[i].getDataModelId());
+			}
+		}
+		cu.putDataModels(temp);
+		return temp;
 	}
-	
+
+	public String showStats() {
+		String stats = Algorithm + "," + Capacity + "," + swaps + "," + requests + "," + dataModelsCounter;
+		return stats;
+	}
 }

@@ -5,10 +5,21 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.Scanner;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -19,14 +30,37 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.hit.client.CacheUnitClient;
 import com.hit.client.CacheUnitClientObserver;
+import com.hit.dm.DataModel;
+import com.hit.server.Request;
 
-public class CacheUnitView {
+public class CacheUnitView extends java.lang.Object 
+{
 	
+		private JFrame frame;
+	    String str,request;
+	    private CacheUnitPanel panel;
 	    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-	
-		public CacheUnitView() {}
+	    JTextArea ta = new JTextArea();
+	    JLabel taLabel = new JLabel();
+	    private final String taStr="\nWelcome to our MMU Project ! \n"
+				+ "Press 'Load a Request' to load your Json File, \n"
+				+ "OR Press 'Show Statistics' \n"
+				+ "to see the Server's Statistics So far.";
+	    
+		public CacheUnitView() 
+		{
+			frame = new JFrame();
+			panel = new CacheUnitPanel();
+		}
+		public void start() 
+		{
+			panel.run();
+		}
 
 		public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
 			pcs.addPropertyChangeListener(pcl);
@@ -34,61 +68,164 @@ public class CacheUnitView {
 		public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
 			pcs.removePropertyChangeListener(pcl);
 		}
-		
-	public void start() 
-	{
-		JFrame frame = new JFrame();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle("MMU Project");
-		frame.setBounds(900, 900, 900, 900);
-	            JPanel panel = new JPanel();
-				panel.setBorder(new EmptyBorder(5, 5, 5, 5));
-				frame.setContentPane(panel);
-				panel.setLayout(null);
-				JTextArea ta = new JTextArea();
-				ta.setBounds(80, 120, 700, 600);
-				ta.setSelectedTextColor(Color.WHITE);
-				ta.setForeground(Color.cyan);
-				ta.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
-				panel.add(ta);
-				//mmu-headline
-				JLabel label1 = new JLabel("MMU");
-				label1.setForeground(Color.WHITE);
-				label1.setFont(new Font("Comic Sans MS", Font.BOLD, 72));
-				label1.setBounds(335, 11, 500, 68);
-				panel.add(label1);
-				//made by
-				JLabel label2 = new JLabel("\u00A9 Sarai Israeli & Joey Havia \u00A9");
-				label2.setForeground(Color.white);
-				label2.setBounds(310, 580, 513, 350);
-				label2.setFont(new Font("Comic Sans MS", Font.ITALIC, 22));
-				panel.add(label2);
-				//stats
-				JButton statButton = new JButton("Show Statistics");
-				statButton.setFont(new Font("Comic Sans MS", Font.PLAIN, 24));
-				statButton.setIcon(new ImageIcon("images/stat.png"));
-				statButton.setBackground(Color.WHITE);
-				statButton.setBounds(550, 11, 300, 78);
-				panel.add(statButton);
-				//request
-				JButton reqButton = new JButton("Load a Request");
-				reqButton.setFont(new Font("Comic Sans MS", Font.PLAIN, 24));
-				reqButton.setIcon(new ImageIcon("images/upload.png"));
-				reqButton.setBackground(Color.WHITE);
-				reqButton.setBounds(10,11,300, 78);
-				panel.add(reqButton);
-				//background
-				JLabel wp = new JLabel("");
-				wp.setIcon(new ImageIcon("images/bg.png"));
-				wp.setBounds(0, 0, screenSize.width, screenSize.height);
-				panel.add(wp);
-				//
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-			}
 	
-	
-	public <T> void updateUIData(T t) {}
+	    public <T> void updateUIData(T t) 
+	    {
+	        	if (t.toString().equals("true"))
+	        	{
+	        		ta.setForeground(Color.green);
+	        		ta.setFont(new Font("Comic Sans MS", Font.BOLD, 30));
+	        		ta.setText("\n\n                   Succeeded :) ");
+	        		taLabel .setIcon(new ImageIcon("images/suc.png"));
+	        	}
+	        	else if (t.toString().equals("false") || t.toString().equals("Empty") )
+	        	{
+	        		ta.setForeground(Color.red);
+	        		ta.setFont(new Font("Comic Sans MS", Font.BOLD, 30));
+	        		ta.setText("\n\n                   Failed :( /n"
+	        				+ "Check your Json file and try again ");
+	        		taLabel .setIcon(new ImageIcon("images/error.png"));
+	        	}
+	        	else
+	        	{
+	        		ta.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
+	        		ta.setForeground(Color.pink);
+	        		String[] res = ((String) t).split(",");
+	        		ta.setText("Algorithm: " + res[0] + "\n\nCapacity: " + res[1] +
+	        				"\n\nTotal Numbers Of Requests: " + res[3] +
+	        				"\n\nTotal Number Of DataModel Swaps(From Cache To Disk): " + res[2] +
+	        				"\n\nTotal Number Of DataModels(GET/DELETE/UPDATE Requests): " + res[4]);
+	        		taLabel .setIcon(new ImageIcon("images/analytics.png"));
+	        	}
+	           
+	        	ta.validate();
+	        	taLabel.validate();
+	        	panel.revalidate(); 
+	        	panel.repaint(); 
+	     }
+	        
+	     public class CacheUnitPanel extends javax.swing.JPanel implements java.awt.event.ActionListener 
+	     {
+			private static final long serialVersionUID = 1L;
+			
+			JButton statButton;
+			JButton reqButton;
+			JLabel wp;
+			JLabel label1;
+			JLabel label2;
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {}
 
+        	
+        	public void run() 
+        	{
+        		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        		frame.setTitle("MMU Project");
+        		frame.setBounds(900, 900, 900, 900);
+        				panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        				frame.setContentPane(panel);
+        				panel.setLayout(null);
+        				ta.setBounds(80, 120, 700, 600);
+        				taLabel.setBounds(320,190,850,650);
+        				taLabel.setIcon(new ImageIcon("images/comp.png"));
+        				ta.setSelectedTextColor(Color.WHITE);
+        				ta.setForeground(Color.pink);
+        				ta.setText(taStr);
+        				ta.setFont(new Font("Comic Sans MS", Font.BOLD, 30));
+        				panel.add(taLabel);
+        				panel.add(ta);
+        				//mmu-headline
+        				label1 = new JLabel("MMU");
+        				label1.setForeground(Color.WHITE);
+        				label1.setFont(new Font("Comic Sans MS", Font.BOLD, 72));
+        				label1.setBounds(335, 11, 500, 68);
+        				panel.add(label1);
+        				//made by
+        				label2 = new JLabel("\u00A9 Sarai Israeli & Joey Havia \u00A9");
+        				label2.setForeground(Color.white);
+        				label2.setBounds(310, 580, 513, 350);
+        				label2.setFont(new Font("Comic Sans MS", Font.ITALIC, 22));
+        				panel.add(label2);
+        				//stats
+        				statButton = new JButton("Show Statistics");
+        				statButton.setFont(new Font("Comic Sans MS", Font.PLAIN, 24));
+        				statButton.setIcon(new ImageIcon("images/stat.png"));
+        				statButton.setBackground(Color.WHITE);
+        				statButton.setBounds(550, 11, 300, 78);
+        				statButton.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								PropertyChangeEvent change;
+								change = new PropertyChangeEvent(CacheUnitView.this, "stats", null, "{ \"headers\":{\"action\":\"STATS\"},\"body\":[]}");
+								pcs.firePropertyChange(change);
+							}
+						});
+        				panel.add(statButton);
+        				        				
+        				//request
+        				reqButton = new JButton("Load a Request");
+        				reqButton.setFont(new Font("Comic Sans MS", Font.PLAIN, 24));
+        				reqButton.setIcon(new ImageIcon("images/upload.png"));
+        				reqButton.setBackground(Color.WHITE);
+        				reqButton.setBounds(10,11,300, 78);
+        				reqButton.addActionListener(new ActionListener() 
+        				{  
+        					  public void actionPerformed(ActionEvent e)
+        					  {  
+        						 JFileChooser fc = new JFileChooser();
+     					         fc.setCurrentDirectory(new File("."));
+     					         int result = fc.showOpenDialog(new JFrame());
+     					         if (result == JFileChooser.APPROVE_OPTION) 
+     					         {
+     					             File selectedFile = fc.getSelectedFile();
+     					             System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+     					             if (selectedFile != null) 
+     					             {
+        							  try 
+        							  {
+        								  PropertyChangeEvent change;
+        								  change = new PropertyChangeEvent(CacheUnitView.this,"load",null,ParseFileToString(selectedFile.getPath()));
+        								  pcs.firePropertyChange(change);
+        								  
+        							  } 
+        							  catch (Exception ex) 
+        							  {
+										ex.printStackTrace();
+        							  }
+     					             }
+     					         }
+        					  }
+        				
+        				});
+        				panel.add(reqButton);
+        				//background
+        				wp = new JLabel("");
+        				wp.setIcon(new ImageIcon("images/bg.png"));
+        				wp.setBounds(0, 0, screenSize.width, screenSize.height);
+        				panel.add(wp);
+        				// 
+        				frame.setLocationRelativeTo(null);
+        				frame.setVisible(true);
+	        }
+	  
+			public String ParseFileToString(String filePath) throws IOException 
+	        {
+	        	String line= null;
+	        	BufferedReader reader = null;
+	        	StringBuilder str = new StringBuilder();
+	        	File file = new File(filePath);
+	        	reader = new BufferedReader(new FileReader(file));
+	        	line = reader.readLine();
+	        	while (line != null) 
+	        	{
+	        		str.append(line);
+	        		line = reader.readLine();
+	        	}
+	        	reader.close();
+	        	return str.toString();
+	        } 
+	     }
 }

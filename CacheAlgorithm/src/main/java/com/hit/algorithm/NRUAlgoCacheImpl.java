@@ -97,15 +97,4 @@ public class NRUAlgoCacheImpl<K,V> extends AbstractAlgoCache<K,V> {
 	public void removeElement(K key) {
 		hm.remove(key);
 	}
-	
-//	public void printForTest() {
-//		Set entrySet = hm.entrySet();
-//		Iterator it = entrySet.iterator();
-//		System.out.println("HashMap entries : "); 
-//		while(it.hasNext()) {
-//			System.out.println(it.next());
-//		}
-//	}
-	
-	
 }

@@ -1,7 +1,11 @@
 package com.hit.dao;
 
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -11,60 +15,61 @@ import java.util.Scanner;
 
 import com.hit.dm.DataModel;
 
-
 public class DaoFileImpl<T> extends java.lang.Object implements IDao<java.lang.Long,DataModel<T>> {
 
-	private  String filePath;
 	int capacity;
 	private DataModel<T> entity;
 	Map<Long, T> hm;
+	File file;
 	ObjectInputStream in;
 	ObjectOutputStream out;
+	String filePath;
 	
 	public DaoFileImpl(java.lang.String filePath,int capacity) {
 		this.capacity = capacity;
 		this.filePath=filePath;
-		hm = new HashMap<Long, T>(capacity);
-		
+	    file = new File (filePath);
+		if (file.exists()) 
+		{
+			file.delete();
+		}
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		hm = new HashMap<Long, T>(capacity);		
 	}
 	public DaoFileImpl(java.lang.String filePath) {
-		this.filePath = filePath;
-		hm = new HashMap<Long, T>();
-		
+		 file = new File (filePath);
+			if (file.exists()) 
+			{
+				file.delete();
+			}
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();			
+			}
+		hm = new HashMap<Long, T>();	
 	}
-	
-	@SuppressWarnings({ "unchecked", "resource" })
 	@Override
 	public void save(DataModel<T> t) { 
 		try {
-			ObjectInputStream in= new ObjectInputStream(new FileInputStream(filePath));
-			if(in.available() != 0) {
-				hm = (Map<Long, T>) in.readObject();
-			}
-			else {
-				ObjectOutputStream out= new ObjectOutputStream(new FileOutputStream(filePath));
+				readFromFile();
 				hm.put(t.getDataModelId(),t.getContent());
-				out.writeObject(hm);
-				in= new ObjectInputStream(new FileInputStream(filePath));
-				hm = (Map<Long, T>) in.readObject();				
-				System.out.println(hm);
-				in.close();
-				out.close();
-			}			
+				writeToFile();		
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
 			}
 	}
-	@SuppressWarnings("unchecked")
 	@Override
 	public DataModel<T> find(Long id) {
 		try {
-			ObjectInputStream in= new ObjectInputStream(new FileInputStream(filePath));
-			hm = (Map<Long, T>) in.readObject();
-			T t = hm.get(id);
-			in.close();
-			if (t != null) {
+			if (id != null) {
+				readFromFile();
+				T t = hm.get(id);
 				entity = new DataModel<T>(id,t);
 				return entity;
 			}
@@ -75,25 +80,47 @@ public class DaoFileImpl<T> extends java.lang.Object implements IDao<java.lang.L
 		}
 		return null;
 }
-	@SuppressWarnings({ "unchecked", "resource" })
-	@Override
-	public void delete(DataModel<T> entity) {//Delete from data source.txt 
+	public void delete(DataModel<T> entity) {//Delete from data source.txt
+			 readFromFile();
+		     hm.remove(entity.getDataModelId());
+		     writeToFile();
+			}
+		
+	@SuppressWarnings("unchecked")
+	public void readFromFile ()
+	{
+		if (file.exists()) 
+		{
 		try {
-			ObjectInputStream in= new ObjectInputStream(new FileInputStream(filePath));
-			hm = (Map<Long, T>) in.readObject();
-			hm.remove(entity.getDataModelId());
-			ObjectOutputStream out= new ObjectOutputStream(new FileOutputStream(filePath));
-			out.writeObject(hm);
-			in= new ObjectInputStream(new FileInputStream(filePath));
-			hm = (Map<Long, T>) in.readObject();				
-			System.out.println(hm);
+			FileInputStream in = new FileInputStream(filePath);
+			if (in.available()>0)
+			{
+			ObjectInputStream oin = new ObjectInputStream(in);
+			hm = (Map<Long, T>)oin.readObject();
+			oin.close();
 			in.close();
-			out.close();
-			
-		}
+			}
+		   }
 		catch (Exception ex){
-			ex.printStackTrace();
-		}
-
+				ex.printStackTrace();
+			}
 	}
+	}
+	public void writeToFile()
+	{
+		ObjectOutputStream out;
+		try {
+			out = new ObjectOutputStream(new FileOutputStream(filePath));
+			out.writeObject(hm);
+			out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e)
+				{
+			e.printStackTrace();
+		}
+	}
+	
 }
+	
+	

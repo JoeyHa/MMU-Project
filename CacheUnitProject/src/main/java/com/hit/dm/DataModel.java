@@ -11,7 +11,7 @@ public class DataModel<T> extends java.lang.Object implements java.io.Serializab
 	private static final long serialVersionUID = 1L;
 
 	public DataModel(java.lang.Long id,T content) {
-		super();
+	//	super();
 		this.id = id;
 		this.content = content;
 	}

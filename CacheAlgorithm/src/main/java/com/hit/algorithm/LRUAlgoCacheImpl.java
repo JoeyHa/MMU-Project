@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 
-public class LRUAlgoCacheImpl<K,V> extends AbstractAlgoCache<K,V> {
+public class LRUAlgoCacheImpl<K,V> extends AbstractAlgoCache<K,V> 
+{
 	
 	private LinkedHashMap<K, V> lhmap;
 	private  int capacity;
 	
-	public LRUAlgoCacheImpl(int capacity) {
+	public LRUAlgoCacheImpl(int capacity) 
+	{
 		super(capacity);
 		this.setCapacity(capacity);
 		lhmap = new LinkedHashMap<K, V>(capacity);
@@ -22,40 +24,42 @@ public class LRUAlgoCacheImpl<K,V> extends AbstractAlgoCache<K,V> {
 		return lhmap.get(key);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public V putElement(K key, V value) {// return value need to be replaced 
-		if(lhmap.isEmpty()) {
+	public V putElement(K key, V value) // return value need to be replaced
+	{ 
+		V val = null;
+		K k= null;
+		if(lhmap.isEmpty()) 
+		{
 			lhmap.put(key, value);
 		}
-		Set<Entry<K, V>> entrySet = lhmap.entrySet();
-		Iterator<Entry<K, V>> it = entrySet.iterator();
-		if(getElement(key) == value) {
+		if(getElement(key) == value) 
+		{
 			removeElement(key);
 			lhmap.put(key,value);
 		}
-		else {
-			if(lhmap.size() == capacity) {
-				removeElement(it.next().getKey());
+		else 
+		{
+			if(lhmap.size() == capacity) 
+			{
+				Set<Entry<K, V>> entrySet = lhmap.entrySet();
+				Iterator<Entry<K, V>> it = entrySet.iterator();
+				k =  it.next().getKey();
+			    it = entrySet.iterator();
+				val = it.next().getValue();
+				removeElement(k);
 			}
 			lhmap.put(key,value);
 		}
-		return value;
+		return val;
 		
 	}
 	@Override
-	public void removeElement(K key) {
+	public void removeElement(K key) 
+	{
 		lhmap.remove(key);
-		
-		
 	}
-//	public void printWhatEver() {
-//		Set entrySet = lhmap.entrySet();
-//		Iterator it = entrySet.iterator();
-//		System.out.println("LinkedHashMap entries : "); 
-//		while(it.hasNext()) {
-//			System.out.println(it.next());
-//		}
-//	}
 
 	public int getCapacity() {
 		return capacity;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="~All/CacheAlgorithm/src/main/java"/>
+	<classpathentry kind="src" path="~All/CacheAlgorithm/src/main/test"/>
+	<classpathentry kind="src" path="~All/CacheUnitProject/src/main/java"/>
+	<classpathentry kind="src" path="~All/CacheUnitProject/src/main/test"/>
+	<classpathentry kind="src" path="CacheUnitClient/src/main/java"/>
+	<classpathentry kind="lib" path="~All/CacheUnitProject/lib/CacheAlgorithm.jar"/>
+	<classpathentry kind="lib" path="~All/CacheUnitProject/lib/gson-2.6.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="CacheUnitClient/bin"/>
+</classpath>
