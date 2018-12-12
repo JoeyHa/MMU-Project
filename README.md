@@ -15,8 +15,3 @@ Implements 3 Types of Page replacement algorithms: </br>
 <B>This projects use Design Patterns such as: Observer Pattern , Strategy Pattern </B> </br>
 
 
-<B>To Do: </br></B>
-1.Add firePropertyListenr to CacheUnitView . </br>
-2.Implements CacheUnitClientObserver . </br>
-3.Test CacheUnitClient . </br>
-4.Overall testing . </br>
