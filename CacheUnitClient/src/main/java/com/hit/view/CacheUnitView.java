@@ -45,6 +45,7 @@ public class CacheUnitView extends java.lang.Object
 	    String str,request;
 	    private CacheUnitPanel panel;
 	    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+<<<<<<< HEAD
 	    JTextArea ta = new JTextArea();
 	    JLabel taLabel = new JLabel();
 	    private final String taStr="\nWelcome to our MMU Project ! \n"
@@ -61,6 +62,11 @@ public class CacheUnitView extends java.lang.Object
 		{
 			panel.run();
 		}
+=======
+            JTextArea ta = new JTextArea();
+	
+		public CacheUnitView() {}
+>>>>>>> ee4e489ed99121270ca8e13367a85e3f2e18008f
 
 		public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
 			pcs.addPropertyChangeListener(pcl);
@@ -69,6 +75,7 @@ public class CacheUnitView extends java.lang.Object
 			pcs.removePropertyChangeListener(pcl);
 		}
 	
+<<<<<<< HEAD
 	    public <T> void updateUIData(T t) 
 	    {
 	        	if (t.toString().equals("true"))
@@ -116,6 +123,23 @@ public class CacheUnitView extends java.lang.Object
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {}
+=======
+	   public <T> void updateUIData(T t) 
+	        {
+	        	if (t.toString().equals("true")) //load succeeded
+	        	{
+	        		ta.setText("Succeeded :) ");
+	        		ta.setSelectedTextColor(Color.GREEN);
+	        	}
+	        	else if (t.toString().equals("false")) // load failed 
+	        	{
+	        		ta.setText("Failed :( ");
+	        		ta.setSelectedTextColor(Color.RED);
+	        	}
+	        	else ta.setText(t.toString());  // stat
+	        	ta.invalidate();
+	        }
+>>>>>>> ee4e489ed99121270ca8e13367a85e3f2e18008f
 
         	
         	public void run() 
